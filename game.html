@@ -1,6 +1,9 @@
 <style>*{margin:0;padding:0;box-sizing:border-box;}canvas{width:100%;height:100%}</style>
 <canvas id='C' style='background:#000;'>
 <script>
+var CONFIG = {
+  planetGrowthFactor: 30
+}
 var c=C.getContext("2d"),R=Math.random,tick=Date.now(),selectedPlanets=new Set(),i,j,ships=[],planets=[],sfx=[];
 C.width = window.innerWidth; C.height = window.innerHeight;
 c.font = '18px Helvetica'; c.textAlign = 'center'; c.textBaseline = 'middle';
@@ -42,7 +45,7 @@ function sendShips(from, to){
       y: from.y+R()*from.r-from.r/2,
       rdx: R()*0.8-0.4, /* randomness factor to make the flight path more interesting*/
       rdy: R()*0.8-0.4}
-    ); 
+    );
     from.e--; /*take energy from planet*/
   }
 }
@@ -64,7 +67,11 @@ function gameLoop() {
     c.fillStyle = 'rgba(255,255,255,0.8)';
     c.fillText(planets[i].e, planets[i].x, planets[i].y);
     if(tickAction && planets[i].p != 0){
-      if(planets[i].e < planets[i].r) planets[i].e=Math.floor(planets[i].e + planets[i].r/30); else planets[i].e--;
+      if (planets[i].e < planets[i].r) {
+        planets[i].e += Math.floor(planets[i].r / CONFIG.planetGrowthFactor)
+      } else if (planets[i].e > planets[i].r) {
+        planets[i].e--;
+      }
     }
   }
   /* winning condition */
