@@ -130,7 +130,10 @@ function gameLoop() {
     }
     if(--sfx[i].f<0)sfx.splice(i, 1);
   }
-  if(tickAction){ aiMove(planets, 2) }
+  if(tickAction){
+    aiMove(planets, 2)
+    aiMoveFrancisco(planets, 1)
+  }
   requestAnimationFrame(gameLoop);
 }
 function planetOnPosition(pos, teams){
@@ -165,6 +168,22 @@ function aiMove(planets, team){
   if(myPlanets.length > 0 && enemyPlanets.length > 0 && myPlanets[0].e > 10) sendShips(myPlanets[0], enemyPlanets[0]);
   if(neutralPlanets.length > 0) for(p of myPlanets) if(p.e > 20) sendShips(p, neutralPlanets[0]);
 }
+
+function aiMoveFrancisco(planets, team){
+  var neutralPlanets = [], myPlanets = [], enemyPlanets = [];
+  planets.forEach(function(p){
+    if(p.p == 0) neutralPlanets.push(p);
+    else if(p.p == team) myPlanets.push(p);
+    else if(p.p != team) enemyPlanets.push(p);
+  });
+  myPlanets.sort(function(a, b){ return b.e - a.e }); // strongest first
+  enemyPlanets.sort(function(a, b){ return a.e - b.e }); // weakest first
+  neutralPlanets.sort(function(a, b){ return a.e - b.e }); // weakest first
+  if(myPlanets.length > 0 && enemyPlanets.length > 0 && myPlanets[0].e > 10) sendShips(myPlanets[0], enemyPlanets[0]);
+  if(neutralPlanets.length > 0) for(p of myPlanets) if(p.e > 20) sendShips(p, neutralPlanets[0]);
+}
+
+
 function newGame(){ planets = generatePlanets(12); ships = []; }
 C.addEventListener('touchstart', dragmove, false);
 C.addEventListener('mousedown', dragmove, false);
