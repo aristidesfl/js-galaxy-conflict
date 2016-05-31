@@ -49,10 +49,13 @@ function sendShips(from, to){
     from.e--; /*take energy from planet*/
   }
 }
-function shipCollision(s){
-  if(s.from==s.to)return s.to;
-  for(var i=0;i<planets.length;i++)if(planets[i]!=s.from&&(planets[i].p!=s.p||planets[i]==s.to)&&inPlanet(s.x,s.y,planets[i]))return planets[i];
-  return null;
+function shipCollision(ship){
+  if (ship.from == ship.to) return ship.to;
+  for (var planet of planets){
+    if (planet == ship.from) continue;
+    if (planet.p == ship.p && ship.to != planet) continue;
+    if (inPlanet(ship.x, ship.y, planet)) return planet;
+  }
 }
 function gameLoop() {
   var tickAction = false, pc;
@@ -170,17 +173,22 @@ function aiMove(planets, team){
 }
 
 function aiMoveFrancisco(planets, team){
-  var neutralPlanets = [], myPlanets = [], enemyPlanets = [];
-  planets.forEach(function(p){
-    if(p.p == 0) neutralPlanets.push(p);
-    else if(p.p == team) myPlanets.push(p);
-    else if(p.p != team) enemyPlanets.push(p);
-  });
-  myPlanets.sort(function(a, b){ return b.e - a.e }); // strongest first
-  enemyPlanets.sort(function(a, b){ return a.e - b.e }); // weakest first
-  neutralPlanets.sort(function(a, b){ return a.e - b.e }); // weakest first
-  if(myPlanets.length > 0 && enemyPlanets.length > 0 && myPlanets[0].e > 10) sendShips(myPlanets[0], enemyPlanets[0]);
-  if(neutralPlanets.length > 0) for(p of myPlanets) if(p.e > 20) sendShips(p, neutralPlanets[0]);
+ var neutralPlanets = [], myPlanets = [], enemyPlanets = [];
+ planets.forEach(function(p){
+   if(p.p == 0) neutralPlanets.push(p);
+   else if(p.p == team) myPlanets.push(p);
+   else if(p.p != team) enemyPlanets.push(p);
+ });
+ notMyPlanets = enemyPlanets.concat(neutralPlanets)
+ notMyPlanets.sort(function(a, b){return a.e / a.r - b.e / b.r })
+ myPlanets.sort(function(a, b){ return b.e - a.e }); // strongest first
+ enemyPlanets.sort(function(a, b){ return a.e - b.e }); // weakest first
+ neutralPlanets.sort(function(a, b){ return a.e - b.e }); // weakest first
+ myPlanets.forEach(function(planet){
+  enemyPlanets.sort(function(a, b){return dist(a.x, a.y, planet.x, planet.y) - dist(b.x, b.y, planet.x, planet.y); });
+  if (planet.e > planet.r / 10) sendShips(planet, enemyPlanets[0]);
+ });
+ // if(neutralPlanets.length > 0) for(p of myPlanets) if(p.e > 20) sendShips(p, neutralPlanets[0]);
 }
 
 
